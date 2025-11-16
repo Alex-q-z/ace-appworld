@@ -5,7 +5,7 @@ local experiment_configs_path = project_home_path + "/experiments/configs";
 local experiment_code_path = project_home_path + "/experiments/code";
 
 local generator_model_config = {
-    "name": "DeepSeek-V3.1",
+    "name": "gpt-oss-120b",
     "provider": "sambanova",
     "temperature": 0,
     "seed": 100,
@@ -22,7 +22,7 @@ local generator_model_config = {
 };
 
 local reflector_model_config = {
-    "name": "DeepSeek-V3.1",
+    "name": "gpt-oss-120b",
     "provider": "sambanova",
     "temperature": 0,
     "seed": 100,
@@ -39,7 +39,7 @@ local reflector_model_config = {
 };
 
 local curator_model_config = {
-    "name": "DeepSeek-V3.1",
+    "name": "gpt-oss-120b",
     "provider": "sambanova",
     "temperature": 0,
     "seed": 100,
@@ -75,7 +75,7 @@ local curator_model_config = {
             "reflector_prompt_file_path": experiment_prompts_path + "/appworld_react_reflector_no_gt_prompt.txt",
             "curator_prompt_file_path": experiment_prompts_path + "/appworld_react_curator_prompt.txt", 
             "initial_playbook_file_path": experiment_playbooks_path + "/appworld_initial_playbook.txt", 
-            "trained_playbook_file_path": experiment_playbooks_path + "/appworld_offline_trained_no_gt_playbook.txt",  
+            "trained_playbook_file_path": experiment_playbooks_path + "/appworld_offline_trained_no_gt_playbook_gpt_oss_120b_epoch_1.txt",  
             "ignore_multiple_calls": true,
             "max_steps": 40,
             "max_cost_overall": 1000,
@@ -84,5 +84,6 @@ local curator_model_config = {
             "use_gt_code": false
         },
         "dataset": "train",
+        "num_epochs": 1,
     }
 }

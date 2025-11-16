@@ -103,7 +103,7 @@ class StarAgent(FromDict):
                 self.step_number = 0
                 for _ in range(self.max_steps):
                     self.step_number += 1
-                    if self.step_number==1:
+                    if self.step_number == 1:
                         execution_inputs, cost, reflection = self.next_execution_inputs_and_cost(execution_outputs, gt_code, reasoning_text)
                     else:
                         execution_inputs, cost, reflection = self.next_execution_inputs_and_cost(execution_outputs, gt_code, "")

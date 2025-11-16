@@ -365,7 +365,7 @@ class SimplifiedReActStarAgent(StarAgent):
             print("⏭️  Skipping curator operation and continuing training")
 
         # Persist updated playbook
-        with open(self.playbook_file_path, "w") as file:
+        with open(self.trained_playbook_file_path, "w") as file:
             file.write(self.playbook)
 
         self.logger.show_message(role="user", message=curator_response, step_number=self.step_number)

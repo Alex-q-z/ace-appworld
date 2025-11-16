@@ -29,7 +29,7 @@ You are also provided with a curated playbook of strategies, API-specific inform
 
 **Playbook**: - Read the **Playbook** first, then execute the task by explicitly leveraging each relevant section:
 ### PLAYBOOK BEGIN
-{{ cheat_sheet }}
+{{ playbook }}
 ### PLAYBOOK END
 
 Let's start with the task
