@@ -14,8 +14,8 @@ from appworld.common.utils import (
     render_template,
     unique,
 )
-from appworld_experiments.code.simplified.agent import Agent, ExecutionIO
-from appworld_experiments.code.simplified.api_predictor import APIPredictor
+from appworld_experiments.code.ace.agent import Agent, ExecutionIO
+from appworld_experiments.code.ace.api_predictor import APIPredictor
 
 
 @Agent.register("simplified_ipfuncall")

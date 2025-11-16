@@ -8,21 +8,21 @@ from jinja2 import Template
 
 from appworld import AppWorld
 from appworld.common.utils import read_file
-from appworld_experiments.code.simplified.agent import Agent, ExecutionIO
-from appworld_experiments.code.simplified.base_agent import BaseAgent, ExecutionIO
+from appworld_experiments.code.ace.agent import Agent, ExecutionIO
+from appworld_experiments.code.ace.base_agent import BaseAgent, ExecutionIO
 
-@BaseAgent.register("simplified_base_react")
+@BaseAgent.register("base_react")
 class BaseSimplifiedReActAgent(BaseAgent):
     def __init__(
         self,
-        prompt_file_path: str | None = None,
+        generator_prompt_file_path: str | None = None,
         ignore_multiple_calls: bool = True,
-        max_prompt_length: int = 50000,
-        max_output_length: int = 20000,
+        max_prompt_length: int = 100000,
+        max_output_length: int = 50000,
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
-        self.prompt_template = read_file(prompt_file_path.replace("/", os.sep)).lstrip()
+        self.generator_prompt_template = read_file(generator_prompt_file_path.replace("/", os.sep)).lstrip()
         self.max_prompt_length = max_prompt_length
         self.max_output_length = max_output_length
         self.ignore_multiple_calls = ignore_multiple_calls
@@ -31,7 +31,7 @@ class BaseSimplifiedReActAgent(BaseAgent):
 
     def initialize(self, world: AppWorld):
         super().initialize(world)
-        template = Template(self.prompt_template)
+        template = Template(self.generator_prompt_template)
         app_descriptions = json.dumps(
             [{"name": k, "description": v} for (k, v) in world.task.app_descriptions.items()],
             indent=1,

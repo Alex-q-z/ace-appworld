@@ -1,9 +1,9 @@
 from typing import Any
 
 from appworld.task import Task, load_task_ids
-from appworld_experiments.code.simplified.agent import Agent
-from appworld_experiments.code.simplified.star_agent import StarAgent
-from appworld_experiments.code.simplified.base_agent import BaseAgent
+from appworld_experiments.code.ace.agent import Agent
+from appworld_experiments.code.ace.star_agent import StarAgent
+from appworld_experiments.code.ace.base_agent import BaseAgent
 
 def run_experiment(
     experiment_name: str,
@@ -40,12 +40,17 @@ def run_experiment(
 
     task_ids = task_ids * num_epochs
 
-    if run_type == "train":
+    if run_type == "ace-adaptation":
+        # ACE adaptation
         agent = StarAgent.from_dict(agent_config)
-    elif run_type == "test":
+    elif run_type == "ace-evaluation":
+        # ACE evaluation
         agent = Agent.from_dict(agent_config)
-    else: # run_type == "base"
+    elif run_type == "non-ace-evaluation":
+        # non-ACE evaluation
         agent = BaseAgent.from_dict(agent_config)
+    else:
+        raise ValueError(f"Unknown run_type: {run_type}")
 
     agent.solve_tasks(
         task_ids=task_ids,

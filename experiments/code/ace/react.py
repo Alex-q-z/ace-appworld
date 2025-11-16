@@ -8,37 +8,37 @@ from jinja2 import Template
 
 from appworld import AppWorld
 from appworld.common.utils import read_file
-from appworld_experiments.code.simplified.agent import Agent, ExecutionIO
+from appworld_experiments.code.ace.agent import Agent, ExecutionIO
 
-@Agent.register("simplified_react")
+@Agent.register("ace_evaluation_react")
 class SimplifiedReActAgent(Agent):
     def __init__(
         self,
-        prompt_file_path: str | None = None,
-        playbook_file_path: str | None = None,
+        generator_prompt_file_path: str | None = None,
+        trained_playbook_file_path: str | None = None,
         ignore_multiple_calls: bool = True,
         max_prompt_length: int | None = None,
         max_output_length: int = 400000,
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
-        self.prompt_template = read_file(prompt_file_path.replace("/", os.sep)).lstrip()
-        self.playbook_file_path = playbook_file_path
+        self.generator_prompt_template = read_file(generator_prompt_file_path.replace("/", os.sep)).lstrip()
+        self.trained_playbook_file_path = trained_playbook_file_path
         self.max_prompt_length = max_prompt_length
         self.max_output_length = max_output_length
         self.ignore_multiple_calls = ignore_multiple_calls
         self.partial_code_regex = r".*```python\n(.*)"
         self.full_code_regex = r"```python\n(.*?)```"
 
-        if os.path.exists(playbook_file_path):
-            playbook = read_file(playbook_file_path.replace("/", os.sep))
+        if os.path.exists(trained_playbook_file_path):
+            playbook = read_file(trained_playbook_file_path.replace("/", os.sep))
             self.playbook = playbook
         else:
-            raise FileNotFoundError(f"playbook file not found at {playbook_file_path}")
+            raise FileNotFoundError(f"playbook file not found at {trained_playbook_file_path}")
 
     def initialize(self, world: AppWorld):
         super().initialize(world)
-        template = Template(self.prompt_template)
+        template = Template(self.generator_prompt_template)
         app_descriptions = json.dumps(
             [{"name": k, "description": v} for (k, v) in world.task.app_descriptions.items()],
             indent=1,

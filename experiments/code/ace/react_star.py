@@ -8,29 +8,29 @@ from jinja2 import Template
 
 from appworld import AppWorld
 from appworld.common.utils import read_file
-from appworld_experiments.code.simplified.star_agent import StarAgent, ExecutionIO
+from appworld_experiments.code.ace.star_agent import StarAgent, ExecutionIO
 from .playbook import apply_curator_operations, extract_json_from_text, get_next_global_id
 
-@StarAgent.register("simplified_react_star")
+@StarAgent.register("ace_adaptation_react")
 class SimplifiedReActStarAgent(StarAgent):
     def __init__(
         self,
-        prompt_file_path: str | None = None,
-        star_prompt_file_path: str | None = None,
-        curator_file_path: str | None = None,
+        generator_prompt_file_path: str | None = None,
+        reflector_prompt_file_path: str | None = None,
+        curator_prompt_file_path: str | None = None,
         initial_playbook_file_path: str | None = None,
-        playbook_file_path: str | None = None,
+        trained_playbook_file_path: str | None = None,
         ignore_multiple_calls: bool = True,
         max_prompt_length: int | None = None,
         max_output_length: int = 400000,
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
-        self.prompt_template = read_file(prompt_file_path.replace("/", os.sep)).lstrip()
-        self.star_prompt = read_file(star_prompt_file_path.replace("/", os.sep))
-        self.curator_file_path = curator_file_path
-        self.curator_prompt = read_file(curator_file_path.replace("/", os.sep))
-        self.playbook_file_path = playbook_file_path
+        self.generator_prompt_template = read_file(generator_prompt_file_path.replace("/", os.sep)).lstrip()
+        self.reflector_prompt = read_file(reflector_prompt_file_path.replace("/", os.sep))
+        self.curator_prompt_file_path = curator_prompt_file_path
+        self.curator_prompt = read_file(curator_prompt_file_path.replace("/", os.sep))
+        self.trained_playbook_file_path = trained_playbook_file_path
         self.max_prompt_length = max_prompt_length
         self.max_output_length = max_output_length
         self.ignore_multiple_calls = ignore_multiple_calls
@@ -39,26 +39,15 @@ class SimplifiedReActStarAgent(StarAgent):
         self.world_gt_code = None  # Store ground truth code for STAR reflection
 
         if os.path.exists(initial_playbook_file_path):
-            playbook = read_file(initial_playbook_file_path.replace("/", os.sep))
-            if playbook != "":
-                self.playbook = playbook
-            else:
-                raise ValueError(f"playbook file is empty at {initial_playbook_file_path}")
+            self.playbook = read_file(initial_playbook_file_path.replace("/", os.sep))
         else:
-            raise FileNotFoundError(f"playbook file not found at {initial_playbook_file_path}")
-        
-        if os.path.exists(playbook_file_path):
-            playbook = read_file(playbook_file_path.replace("/", os.sep))
-            if playbook != "":
-                self.playbook = playbook
-            else:
-                raise ValueError(f"playbook file is empty at {playbook_file_path}")
+            self.playbook = "(empty)" # default empty playbook
         
         self.next_global_id = get_next_global_id(playbook)
 
     def initialize(self, world: AppWorld):
         super().initialize(world)
-        template = Template(self.prompt_template)
+        template = Template(self.generator_prompt_template)
         app_descriptions = json.dumps(
             [{"name": k, "description": v} for (k, v) in world.task.app_descriptions.items()],
             indent=1,
@@ -246,7 +235,7 @@ class SimplifiedReActStarAgent(StarAgent):
         Let the reflector generate insights based on the full conversation history, i.e. all messages and ground truths (if any).
         """
         filled_prompt = (
-            self.star_prompt
+            self.reflector_prompt
             .replace("{{ground_truth_code}}", self.world_gt_code or "")
             .replace("{{test_report}}", self.test_report or "")
             .replace("{{generated_code}}", "See full conversation history below")
@@ -266,7 +255,7 @@ class SimplifiedReActStarAgent(StarAgent):
         
         filled_prompt += conversation_history
 
-        message_ = self.reflector_curator_model.generate(messages=[{"role": "user", "content": filled_prompt}])
+        message_ = self.reflector_model.generate(messages=[{"role": "user", "content": filled_prompt}])
         reasoning_text = message_.get("content", "")
         self.logger.show_message(role="user", message=reasoning_text, step_number=self.step_number)
 
@@ -305,7 +294,7 @@ class SimplifiedReActStarAgent(StarAgent):
         content += conversation_history
 
         self.curation_messages = [{"role": "user", "content": content}]
-        curator_raw = self.reflector_curator_model.generate(messages=self.curation_messages)
+        curator_raw = self.curator_model.generate(messages=self.curation_messages)
         curator_response = curator_raw.get("content", "")
 
         # Parse JSON (must match explicit response schema: {"reasoning": str, "operations": [...]})

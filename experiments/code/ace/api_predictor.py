@@ -6,7 +6,7 @@ from appworld.common.utils import (
     unique,
 )
 from appworld.task import Task
-from appworld_experiments.code.simplified.lite_llm_generator import LiteLLMGenerator
+from appworld_experiments.code.ace.lite_llm_generator import LiteLLMGenerator
 
 
 class APIPredictor:

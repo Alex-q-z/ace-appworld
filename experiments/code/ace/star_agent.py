@@ -6,9 +6,9 @@ from appworld import AppWorld
 from appworld.common.constants import DEFAULT_EXPERIMENT_NAME
 from appworld.common.random import set_random_seed
 from appworld.common.utils import FromDict, chunk_and_return
-from appworld_experiments.code.simplified.cost_tracker import CostTracker
-from appworld_experiments.code.simplified.lite_llm_generator import LiteLLMGenerator
-from appworld_experiments.code.simplified.logger import Logger
+from appworld_experiments.code.ace.cost_tracker import CostTracker
+from appworld_experiments.code.ace.lite_llm_generator import LiteLLMGenerator
+from appworld_experiments.code.ace.logger import Logger
 
 from appworld.evaluator import evaluate_task
 
@@ -20,8 +20,9 @@ class ExecutionIO:
 class StarAgent(FromDict):
     def __init__(
         self,
-        gen_model_config: dict,
-        reflector_curator_model_config: dict,
+        generator_model_config: dict,
+        reflector_model_config: dict,
+        curator_model_config: dict,
         appworld_config: dict | None = None,
         logger_config: dict | None = None,
         max_steps: int = 40,
@@ -31,8 +32,9 @@ class StarAgent(FromDict):
         use_reflector: bool = True,
         use_gt_code: bool = False,
     ):
-        self.generator_model = LiteLLMGenerator(**gen_model_config)
-        self.reflector_curator_model = LiteLLMGenerator(**reflector_curator_model_config)
+        self.generator_model = LiteLLMGenerator(**generator_model_config)
+        self.reflector_model = LiteLLMGenerator(**reflector_model_config)
+        self.curator_model = LiteLLMGenerator(**curator_model_config)
 
         self.messages: list[dict] = []
         self.max_steps = max_steps
@@ -55,7 +57,7 @@ class StarAgent(FromDict):
         self.last_execution_error = None
         self.playbook = ''
         self.current_task_index = 0  # Global variable to track current task index
-        self.playbook_file_path = None
+        self.trained_playbook_file_path = None
         self.num_retries = 5
         self.use_gt_code = use_gt_code
 
@@ -63,7 +65,8 @@ class StarAgent(FromDict):
         self.world = world
         if self.log_lm_calls:
             self.generator_model.log_calls_to(world=world)
-            self.reflector_curator_model.log_calls_to(world=world)
+            self.reflector_model.log_calls_to(world=world)
+            self.curator_model.log_calls_to(world=world)
         self.cost_tracker.reset(world.task_id)
         self.step_number = 0
         self.messages = []
@@ -236,10 +239,10 @@ class StarAgent(FromDict):
     def save_playbook_snapshot(self):
         """Save playbook snapshot every 30 tasks"""
         if hasattr(self, 'playbook') and self.playbook:
-            if self.playbook_file_path:
-                snapshot_file_path = self.playbook_file_path.split('.txt')[0] + str(self.current_task_index + 1) + '.txt'
+            if self.trained_playbook_file_path:
+                snapshot_file_path = self.trained_playbook_file_path.split('.txt')[0] + str(self.current_task_index + 1) + '.txt'
             else:
-                raise ValueError("playbook_file_path is not set")
+                raise ValueError("trained_playbook_file_path is not set")
             with open(snapshot_file_path, "w") as file:
                 file.write(self.playbook)
             print(f"Saved playbook snapshot at task {self.current_task_index + 1}: {snapshot_file_path}")
