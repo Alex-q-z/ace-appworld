@@ -71,7 +71,7 @@ class SimplifiedReActStarAgent(StarAgent):
         if world_gt_code is not None:
             self.world_gt_code = world_gt_code
         
-        if reasoning_text != "":
+        if reasoning_text != "" and reasoning_text is not None:
             self.messages.append({
                 "role": "user",
                 "content": "In your previous attempt, the code failed to match the ground truth outputs during unit testing. Provide reflection on what might have gone wrong and how to fix it."
@@ -108,6 +108,8 @@ class SimplifiedReActStarAgent(StarAgent):
         return [ExecutionIO(content=code)], output["cost"], None
 
     def extract_code_and_fix_content(self, text: str) -> tuple[str, str]:
+        if text is None:
+            return "", ""
         original_text = text
         output_code = ""
         match_end = 0
@@ -257,7 +259,10 @@ class SimplifiedReActStarAgent(StarAgent):
 
         message_ = self.reflector_model.generate(messages=[{"role": "user", "content": filled_prompt}])
         reasoning_text = message_.get("content", "")
-        self.logger.show_message(role="user", message=reasoning_text, step_number=self.step_number)
+        if reasoning_text != "" and reasoning_text is not None:
+            self.logger.show_message(role="user", message=reasoning_text, step_number=self.step_number)
+        else:
+            self.logger.show_message(role="user", message="[WARN] reasoning_text is empty or None", step_number=self.step_number)
 
         return reasoning_text
     

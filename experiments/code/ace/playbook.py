@@ -322,10 +322,14 @@ def extract_json_from_text(text, json_key=None):
                 
     except Exception as e:
         print(f"Failed to extract JSON: {e}")
-        if len(text) > 500:
-            print(f"Raw content preview:\n{text[:500]}...")
+        if text is None:
+            print("[WARN] text is None in extract_json_from_text()")
+            return None
         else:
-            print(f"Raw content:\n{text}")
+            if len(text) > 500:
+                print(f"Raw content preview:\n{text[:500]}...")
+            else:
+                print(f"Raw content:\n{text}")
         
     return None
 
