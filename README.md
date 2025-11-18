@@ -18,22 +18,23 @@ git lfs install
 
 ### 1.2 Clone the repository
 ```bash
-git clone https://github.com/Alex-q-z/ace-appworld.git ace-appworld
+git clone https://github.com/ace-agent/ace-appworld.git ace-appworld
 cd ace-appworld
 export APPWORLD_PROJECT_PATH="$(pwd)"
 ```
 
-### 1.3 Install AppWorld from source
+### 1.3 Create virtual env for Python3.11 
+Feel free to use other methods like conda if you wish
 ```bash
-pip install -e .
-appworld install --repo
+python3.11 -m venv .venv
+source .venv/bin/activate
 ```
 
-### 1.4 Install appworld_experiments from source
+### 1.4 Install AppWorld from source
 ```bash
-cd experiments
 pip install -e .
-cd ..
+pip install -e "experiments[simplified]"
+appworld install --repo
 ```
 
 ### 1.5 Fetch data
